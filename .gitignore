@@ -1,3 +1,5 @@
 .env
 .venv
 /data
+data_process.ipynb
+.DS_Store
