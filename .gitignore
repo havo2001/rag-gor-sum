@@ -3,3 +3,4 @@
 /data
 data_process.ipynb
 .DS_Store
+src/__pycache__/

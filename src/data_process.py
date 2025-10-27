@@ -2,7 +2,7 @@ import json
 import gzip
 
 # filter some noises caused by speech recognition
-# This is the function from the original paper
+# This is the function from the original paper of the dataset
 def clean_data(text):
     text = text.replace('{ vocalsound } ', '')
     text = text.replace('{ disfmarker } ', '')
@@ -14,6 +14,7 @@ def clean_data(text):
     text = text.replace('{ nonvocalsound } ', '')
     text = text.replace('{ gap } ', '')
     return text
+
 
 # We use the exactly preprocess procedure from the original paper
 def process_qmsum(train=True):
@@ -29,6 +30,7 @@ def process_qmsum(train=True):
         processed_sample = {}
         # I checked the training, all of them have one general query list: 'Summarize the whole meeting.'
         # For testing, only one has two answers for the general query list
+        processed_sample['topic_list'] = sample['topic_list']
         processed_sample['general_query_list'] = sample['general_query_list']
         joined_transcript = '\n'.join(
             ["Speaker: " + i["speaker"] + "\n" + "Content: " + i["content"] for i in sample['meeting_transcripts']])
@@ -36,30 +38,52 @@ def process_qmsum(train=True):
         processed_data.append(processed_sample)
     
     # Print one sample to test
+    print("\n--------------------")
+    print("✅ Successfully preprocessed data!")
+    print("--------------------")
     print(processed_data[0]['general_query_list'])
     print(processed_data[0]['meeting_transcripts'])
     print()
 
-    # Save to data/processed/QMSum
-    output_path = './data/processed/QMSum/processed_'
-    output_path +=  'train.jsonl.gz' if train else 'test.jsonl.gz' 
-    with gzip.open(output_path, 'wt', encoding='utf-8') as g:
-        for sample in processed_data:
-            g.write(json.dumps(sample, ensure_ascii=False) + "\n")
-
-    print('Successfully preprocess and save the processed data!')
-
     return processed_data
-    
-
-def main():
-    train_qmsum = process_qmsum(train=True)
-    test_qmsum = process_qmsum(train=False)
 
 
-if __name__ == '__main__':
-    main()
+def get_processed_data(dataset, train=True):
+    if dataset == "qmsum":
+        data = process_qmsum(train=train)
+    # Insert more dataset if needed
+    else:
+        raise Exception("Dataset Error")
 
+    return data
+
+
+def test_data_generation(dataset, sample):
+    res = []
+    if dataset == 'qmsum':
+        all_topic = ', '.join(item['topic'] for item in sample['topic_list'])
+        for test_query in sample['general_query_list']:
+            data = {}
+            data['rag_query'] = test_query['query'] + ' The topic list of the meeting transcript is: ' + all_topic
+            data['query'] = test_query['query']
+            data['summary'] = test_query['answer']
+            res.append(data)
+    else:
+        raise Exception("Dataset Error")
+    return res
+
+
+def split_corpus_into_chunk(dataset, sample, text_splitter):
+    chunk_list = []
+    if dataset == "qmsum":
+        doc_list = [sample["meeting_transcripts"]]
+    else:
+        raise Exception("Dataset Error")
+
+    for doc in doc_list:
+        chunk_list.extend(text_splitter.split_text(doc))
+
+    return chunk_list
     
 
 
