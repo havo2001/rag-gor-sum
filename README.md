@@ -160,29 +160,35 @@ os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 ```
 rag-gor-sum/
-├── baseline/                    # Baseline RAG implementations
-│   └── baseline.py              # BM25 and Contriever baseline experiments
-├── GoR/                         # Graph-of-Records implementation
-│   ├── graph_construction.py   # Graph construction from documents
-│   ├── train_preparation.py    # Prepare training data
-│   ├── train.py                # Train GoR model
-│   └── run.py                  # Inference on test set
-├── src/                        # Core source code
-│   ├── bm25.py                 # BM25 retrieval implementation
-│   ├── contriever.py           # Contriever dense retrieval
-│   ├── retrieval.py            # Retrieval utilities
-│   ├── llm.py                  # LLM API interface
-│   ├── eval.py                 # ROUGE evaluation scripts
-│   ├── data_process.py         # Data preprocessing utilities
-│   └── helper.py               # Helper functions
-├── prompt/                     # Prompt templates
-│   └── prompt.py               # Query and summarization prompts
-├── data/                       # Dataset directory
-│   └── raw/QMSum/              # QMSum dataset
-├── graph/                      # Generated graphs (created during runtime)
-├── weights/                    # Trained model weights (created during training)
-├── result/                     # Experiment results (JSON files)
-├── .env                        # API keys (create this file)
-├── .gitignore                  # Git ignore file
-└── README.md                   # This file
+├── baseline/                      # Baseline RAG implementations
+│   └── baseline.py                # BM25 and Contriever baseline experiments
+├── GoR/                           # Graph-of-Records implementation
+│   ├── graph_construction.py     # Graph construction from documents
+│   ├── train_preparation.py      # Prepare training data
+│   ├── train.py                  # Train GoR model
+│   └── run.py                    # Inference on test set
+├── src/                          # Core source code
+│   ├── bm25.py                   # BM25 retrieval implementation
+│   ├── contriever.py             # Contriever dense retrieval
+│   ├── retrieval.py              # Retrieval utilities
+│   ├── llm.py                    # LLM API interface
+│   ├── eval.py                   # ROUGE evaluation scripts
+│   ├── llm_as_a_judge.py         # LLM-as-judge evaluation
+│   ├── error_analysis.py         # Error analysis utilities
+│   ├── data_process.py           # Data preprocessing utilities
+│   └── helper.py                 # Helper functions
+├── prompt/                       # Prompt templates
+│   └── prompt.py                 # Query, summarization, and judge prompts
+├── data/                         # Dataset directory
+│   └── raw/QMSum/                # QMSum dataset
+├── graph/                        # Generated graphs (created during runtime)
+├── weights/                      # Trained model weights (created during training)
+├── result/                       # Experiment results
+│   ├── *.json                    # Model outputs (BM25, Contriever, GoR)
+│   └── error_analysis_dump.txt   # Error analysis results
+├── judge.jsonl                   # LLM-as-judge evaluation results
+├── data_process.ipynb            # Data exploration notebook
+├── .env                          # API keys (create this file)
+├── .gitignore                    # Git ignore file
+└── README.md                     # This file
 ```
