@@ -120,11 +120,13 @@ python -m src.eval --dataset 'qmsum' --llm_model 'meta-llama/Meta-Llama-3.1-8B-I
 
 ### ROUGE Scores on QMSum Dataset
 
-| Method      | ROUGE-1 | ROUGE-2 | ROUGE-L |
-|-------------|---------|---------|---------|
-| BM25        | 0.3253  | 0.0894  | 0.1884  |
-| Contriever  | 0.2977  | 0.0751  | 0.1709  |
-| GoR         | 0.3111  | 0.0813  | 0.1824  |
+| Method      | ROUGE-1              | ROUGE-2              | ROUGE-L              |
+|-------------|----------------------|----------------------|----------------------|
+| BM25        | 0.3253 (0.30, 0.35)  | 0.0894 (0.07, 0.11)  | 0.1884 (0.18, 0.20)  |
+| Contriever  | 0.2977 (0.30, 0.34)  | 0.0751 (0.07, 0.09)  | 0.1709 (0.17, 0.19)  |
+| GoR         | 0.3111 (0.29, 0.33)  | 0.0813 (0.07, 0.09)  | 0.1824 (0.17, 0.19)  |
+
+*95% confidence intervals shown in parentheses*
 
 ### Token Usage Comparison
 
