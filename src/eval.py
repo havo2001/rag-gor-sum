@@ -42,6 +42,30 @@ def rouge_eval(generated_response, ground_truth, type='rougeL'):
     return float(precision), float(recall), float(fmeasure)
 
 
+def bootstrap_confidence_interval(
+    data,
+    confidence=0.95,
+    n_bootstrap=10000,
+    statistic=np.mean,
+    seed=42
+):
+    x = np.asarray(data, dtype=float)
+    n = x.shape[0]
+    rng = np.random.default_rng(seed)
+    boot_stats = np.empty(n_bootstrap, dtype=float)
+
+    for i in range(n_bootstrap):
+        sample_idx = rng.integers(0, n, size=n)   # resample with replacement
+        boot_stats[i] = float(statistic(x[sample_idx]))
+
+    alpha = (1.0 - confidence) / 2.0
+    ci_low = float(np.quantile(boot_stats, alpha))
+    ci_high = float(np.quantile(boot_stats, 1.0 - alpha))
+    point = float(statistic(x))
+
+    return point, (ci_low, ci_high)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True)
@@ -80,10 +104,16 @@ if __name__ == '__main__':
         metric["ROUGE-L"].append(fL)
         metric["ROUGE-1"].append(f1)
         metric["ROUGE-2"].append(f2)
-
+    
     final_metric = {key: np.mean(metric[key]) for key in metric.keys()}
     print(f"{'='*50} Result for RAG baseline with {RETRIEVER} {'='*50}")
     print(final_metric)
+    
+    for m in ["ROUGE-L", "ROUGE-1", "ROUGE-2"]:
+        mean_m, (lo, hi) = bootstrap_confidence_interval(metric[m], confidence=0.95, n_bootstrap=5000, seed=42)
+        print(f"{m}: mean={mean_m:.4f}, 95% CI=({lo:.4f}, {hi:.4f})")
+
+    
 
 
         
