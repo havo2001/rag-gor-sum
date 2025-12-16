@@ -39,3 +39,41 @@ Please directly output the generated summary question, do not output irrelevant 
 DOCUMENT:
 {document}
 """
+
+
+LLM_AS_JUDGE_PROMPT = """
+You are an expert evaluator of meeting summaries. Your job is to compare two candidate summaries (Answer A and Answer B) for the same question.
+
+Rules:
+- Be strictly unbiased: do NOT favor the first/second answer, and do NOT favor longer answers.
+- If a REFERENCE SUMMARY is provided, use it to judge coverage and correctness.
+- If something is unclear, prefer "tie" rather than guessing.
+- Return ONLY valid JSON. No markdown. No extra text.
+
+QUESTION:
+{QUERY}
+
+REFERENCE SUMMARY (optional):
+{GROUND_TRUTH}
+
+ANSWER A:
+{ANSWER_A}
+
+ANSWER B:
+{ANSWER_B}
+
+Evaluate and output JSON EXACTLY in this schema:
+{
+  "faithfulness_winner": "A" | "B" | "tie",
+  "coverage_winner": "A" | "B" | "tie",
+  "coherence_winner": "A" | "B" | "tie",
+  "conciseness_winner": "A" | "B" | "tie",
+  "overall_winner": "A" | "B" | "tie",
+  "rationale": [
+    "short bullet 1",
+    "short bullet 2",
+    "short bullet 3"
+  ]
+}
+
+"""
