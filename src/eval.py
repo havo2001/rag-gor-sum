@@ -4,6 +4,17 @@ import argparse
 from rouge_score import rouge_scorer
 import json
 from src.helper import set_seed
+from bert_score import score
+
+
+def bert_score_eval(generate_response, ground_truth, device, batch_size=8):
+    P, R, F = score(generate_response, ground_truth, model_type="microsoft/deberta-xlarge-mnli", device=device,
+                    batch_size=batch_size)
+    P = [float(i) for i in P.numpy()]
+    R = [float(i) for i in R.numpy()]
+    F = [float(i) for i in F.numpy()]
+
+    return P, R, F
 
 
 def rouge_eval(generated_response, ground_truth, type='rougeL'):
