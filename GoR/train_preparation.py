@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--device", type=str, default="mps")
+    parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--retriever", type=str, default="contriever")
     parser.add_argument("--chunk_size", type=int, default=256)
     parser.add_argument("--chunk_overlap", type=int, default=32)

@@ -200,7 +200,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--device", type=str, default="mps")
+    parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--max_epoch", type=int, default=150)
     parser.add_argument("--lr", type=float, default=1e-3)

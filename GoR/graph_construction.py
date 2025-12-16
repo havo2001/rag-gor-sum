@@ -196,7 +196,7 @@ if __name__ == '__main__':
     parser.add_argument('--train', action='store_true')
     parser.add_argument("--llm_model", type=str, default="mistralai/Mixtral-8x7B-Instruct-v0.1")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--device", type=str, default='mps')
+    parser.add_argument("--device", type=str, default='cuda')
     parser.add_argument("--tau", type=float, default=0)
     parser.add_argument("--query_tau", type=float, default=0.5)
     parser.add_argument("--retriever", type=str, default="contriever")

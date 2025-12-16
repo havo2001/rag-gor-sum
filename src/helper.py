@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torch
 import os
+import json
 
 import networkx as nx
 import pickle
@@ -44,3 +45,8 @@ def read_from_pkl(output_file):
         data = pickle.load(file)
 
     return data
+
+
+def write_to_json(data, output_file):
+    with open(output_file, 'w', encoding='utf-8') as file:
+        json.dump(data, file, indent=4)
