@@ -10,7 +10,7 @@ def get_llm_response_via_api(prompt,
                              TOP_P=1.0,
                              N=1,
                              SEED=42,
-                             MAX_TRIALS=5,
+                             MAX_TRIALS=10,
                              TIME_GAP=5):
     
     openai.api_base = API_BASE
@@ -38,7 +38,8 @@ def get_llm_response_via_api(prompt,
     if completion is None:
         raise Exception(f'Reach MAX_TRIALS={MAX_TRIALS}')
     contents = completion.choices
+    usage = getattr(completion, 'usage', None)
     if len(contents) == 1:
-        return contents[0].message["content"]
+        return contents[0].message["content"], usage
     else:
-        return [c.message["content"] for c in contents]
+        return [c.message["content"] for c in contents], usage

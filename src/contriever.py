@@ -77,6 +77,11 @@ class Contriever:
         return I[0]
     
     def retrieve(self, query, text_chunk, chunk_num):
+        # Make sure the query are list of strings
+        if not isinstance(query, list):
+            query = [query]
+
+
         print("{} Dense Retrieval...".format(show_time()))
         text_chunk_emb = self.get_dense_embedding(instructions=text_chunk, tokenizer=self.ctx_tokenizer, model=self.ctx_encoder)
         query_emb = self.get_dense_embedding(instructions=query, tokenizer=self.query_tokenizer, model=self.query_encoder)

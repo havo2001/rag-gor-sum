@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 # Really important, mac failed when import faises
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")   # must be BEFORE torch/faiss imports
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--llm_model", type=str, default="meta-llama/Llama-2-7b-chat-hf")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--device", type=str, default='mps')
+    parser.add_argument("--device", type=str, default='cuda')
     parser.add_argument("--tau", type=float, default=0)
     parser.add_argument("--retriever", type=str, default="contriever")
     parser.add_argument("--chunk_size", type=int, default=256)
@@ -75,27 +76,64 @@ if __name__ == '__main__':
 
     # Iterate to each sample
     result_recorder = dict()
+    total_retrieval_time = 0
+    total_input_tokens = 0
+    total_output_tokens = 0
+    start_time = time.time()
+    
     for idx, sample in enumerate(tqdm(test_data, total=len(test_data), desc="Evaluating", unit="ex")):
         all_doc_chunk_list = split_corpus_into_chunk(dataset=DATASET, sample=sample, text_splitter=TEXT_SPLITTER)
         test_gen = test_data_generation(dataset=DATASET, sample=sample)
 
         for test_query in test_gen:
             # Retrieve step, retrieve top 6 relevant chunks
+            retrieval_start = time.time()
             retrieved_idx, retrieved_chunks = retriever.retrieve(query=test_query['rag_query'],
                                                                  text_chunk=all_doc_chunk_list,
                                                                  chunk_num=RECALL_CHUNK_NUM)
-        
+            # Make sure the retrieved_idx is a list of integers
+            retrieved_idx = [int(x) for x in retrieved_idx]
+
+            print(f"Retrieval time: {time.time() - retrieval_start:.3f}s")
+            total_retrieval_time += (time.time() - retrieval_start)
+
+            print(test_query['rag_query'])
             # Generate step
             prompt = QUERY_PROMPT_NORMAL[DATASET].format_map({'question': test_query['query'],
                                                              'materials': "\n\n".join(retrieved_chunks)})
 
-            response = get_llm_response_via_api(prompt=prompt,
-                                                API_KEY=os.getenv("API_KEY"),
-                                                LLM_MODEL=LLM_MODEL,
-                                                TAU=TAU,
-                                                SEED=SEED)
+            response, usage = get_llm_response_via_api(prompt=prompt,
+                                                        API_KEY=os.getenv("API_KEY"),
+                                                        LLM_MODEL=LLM_MODEL,
+                                                        TAU=TAU,
+                                                        SEED=SEED)
             
-            result_recorder[str(idx) + '.' + test_query['query']] = {"response": response, "ground_truth": test_query["summary"]}
+            # Track token usage
+            if usage:
+                total_input_tokens += getattr(usage, 'prompt_tokens', 0)
+                total_output_tokens += getattr(usage, 'completion_tokens', 0)
+            
+            result_recorder[str(idx) + '.' + test_query['query']] = {"response": response, "ground_truth": test_query["summary"], "retrieved_idx": retrieved_idx, "retrieved_chunks": retrieved_chunks}
+    
+    # Print performance summary
+    total_time = time.time() - start_time
+    num_queries = len(result_recorder)
+    total_tokens = total_input_tokens + total_output_tokens
+    
+    print("\n" + "="*60)
+    print("PERFORMANCE SUMMARY")
+    print("="*60)
+    print(f"Total execution time: {total_time:.2f}s ({total_time/60:.2f} min)")
+    print(f"Total retrieval time: {total_retrieval_time:.2f}s ({total_retrieval_time/total_time*100:.1f}%)")
+    print(f"Avg retrieval time per query: {total_retrieval_time/num_queries:.3f}s")
+    print("-"*60)
+    print(f"Total input tokens: {total_input_tokens:,}")
+    print(f"Total output tokens: {total_output_tokens:,}")
+    print(f"Total tokens: {total_tokens:,}")
+    print(f"Avg tokens per query: {total_tokens/num_queries:.1f}")
+    print("-"*60)
+    print(f"Number of queries: {num_queries}")
+    print("="*60 + "\n")
     
     # Write the result into result folder
     llm_model_name = LLM_MODEL.split('/')[1] if '/' in LLM_MODEL else LLM_MODEL
